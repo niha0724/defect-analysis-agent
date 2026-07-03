@@ -18,6 +18,7 @@ degrade gracefully to ``UNKNOWN`` rather than crashing ingestion.
 from __future__ import annotations
 
 import re
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Iterator, Optional
 
@@ -167,9 +168,9 @@ def normalize_jira(row: dict, source: Source = Source.APACHE) -> Optional[Defect
         return None
     title = _first(row, ["summary", "title", "short_desc"])
     desc = _first(row, ["description", "desc", "detail"])
-    pri_text = _first(row, ["priority", "priority_name"])
+    pri_text = _first(row, ["priority", "priority.name", "priority_name"])
     dup = _first(row, ["duplicate_of", "dup_id", "duplicate"])
-    project = _first(row, ["project", "project_key", "project_name"]) or key.split("-")[0]
+    project = _first(row, ["project.key", "project", "project_key", "project.name", "project_name"]) or key.split("-")[0]
     text = f"{title}\n{desc}"
 
     # JIRA has no separate "severity"; priority names double as severity.
@@ -179,15 +180,15 @@ def normalize_jira(row: dict, source: Source = Source.APACHE) -> Optional[Defect
         defect_id=f"{source.value}-{key}",
         source=source,
         project=project,
-        component=_first(row, ["components", "component"]),
+        component=_first(row, ["components", "component", "components.name"]),
         title=clean_text(title, max_chars=500),
         description=clean_text(desc),
         severity=severity,
         priority=_map_priority(pri_text),
-        status=_map_status(_first(row, ["status"])),
-        resolution=_map_resolution(_first(row, ["resolution"])),
+        status=_map_status(_first(row, ["status", "status.name"])),
+        resolution=_map_resolution(_first(row, ["resolution", "resolution.name"])),
         duplicate_of=f"{source.value}-{dup}" if dup else None,
-        resolution_note=clean_text(_first(row, ["resolution_note", "comments", "fix"]), max_chars=1000),
+        resolution_note=clean_text(_first(row, ["resolution.description", "resolution_note", "comments", "fix"]), max_chars=1000),
         has_stack_trace=_has_trace(text),
         language=detect_language(text),
         reporter=_first(row, ["reporter", "creator"]),
@@ -195,7 +196,7 @@ def normalize_jira(row: dict, source: Source = Source.APACHE) -> Optional[Defect
         created_at=_first(row, ["created", "created_at", "creation_date"]),
         resolved_at=_first(row, ["resolutiondate", "resolved", "resolution_date", "updated"]),
         url=f"https://issues.apache.org/jira/browse/{key}",
-        keywords=[t for t in _first(row, ["issuetype", "type"]).split() if t],
+        keywords=[t for t in _first(row, ["issuetype.name", "issuetype", "type"]).split() if t],
     )
 
 
@@ -214,13 +215,96 @@ _NORMALIZERS = {
 }
 
 
+# --------------------------------------------------------------------------
+# MSR2013 Eclipse/Mozilla XML loader
+# The Eclipse & Mozilla Defect Tracking Dataset ships one XML file per bug
+# attribute per product; values carry an update history, so the latest <what>
+# is the final value. We join the attribute files on report id.
+# --------------------------------------------------------------------------
+_MSR2013_ATTRS = ("short_desc", "severity", "priority", "bug_status", "resolution", "component")
+
+
+def _parse_attr_xml(path: Path) -> dict:
+    """report id -> latest <what> value for one attribute file (streaming)."""
+    result: dict[str, str] = {}
+    if not path.exists():
+        return result
+    for _event, elem in ET.iterparse(str(path), events=("end",)):
+        if elem.tag == "report":
+            rid = elem.get("id")
+            whats = elem.findall("update/what")
+            if rid and whats:
+                result[rid] = (whats[-1].text or "").strip()
+            elem.clear()
+    return result
+
+
+def _parse_reports_xml(path: Path) -> dict:
+    base: dict[str, dict] = {}
+    for _event, elem in ET.iterparse(str(path), events=("end",)):
+        if elem.tag == "report":
+            rid = elem.get("id")
+            if rid:
+                base[rid] = {
+                    "opening_time": elem.findtext("opening_time", "") or "",
+                    "reporter": elem.findtext("reporter", "") or "",
+                }
+            elem.clear()
+    return base
+
+
+def _load_msr2013(source: Source, base_dir: Path, limit: Optional[int] = None) -> Iterator[DefectRecord]:
+    """Load Eclipse/Mozilla defects from an extracted MSR2013 directory.
+
+    Layout: ``base_dir/<Product>/{reports,short_desc,severity,...}.xml``. MSR2013
+    stores title + metadata but not the long description, so ``description`` is
+    empty and the title carries the retrieval signal. The dataset is already
+    filtered to genuine defects (no feature requests).
+    """
+    base_dir = Path(base_dir)
+    count = 0
+    for pdir in sorted(p for p in base_dir.iterdir() if p.is_dir()):
+        reports_f = pdir / "reports.xml"
+        if not reports_f.exists():
+            continue
+        base = _parse_reports_xml(reports_f)
+        attrs = {name: _parse_attr_xml(pdir / f"{name}.xml") for name in _MSR2013_ATTRS}
+        for rid, meta in base.items():
+            title = attrs["short_desc"].get(rid, "")
+            if not title:
+                continue
+            yield DefectRecord(
+                defect_id=f"{source.value}-{rid}",
+                source=source,
+                project=pdir.name,
+                component=attrs["component"].get(rid, ""),
+                title=clean_text(title, max_chars=500),
+                severity=_map_severity(attrs["severity"].get(rid, "")),
+                priority=_map_priority(attrs["priority"].get(rid, "")),
+                status=_map_status(attrs["bug_status"].get(rid, "")),
+                resolution=_map_resolution(attrs["resolution"].get(rid, "")),
+                has_stack_trace=_has_trace(title),
+                language=detect_language(title),
+                reporter=meta.get("reporter", ""),
+                created_at=meta.get("opening_time", ""),
+                url=_bugzilla_url(source, rid),
+            )
+            count += 1
+            if limit and count >= limit:
+                return
+
+
 def load_source(
     source: Source,
     path: Optional[Path] = None,
     limit: Optional[int] = None,
     keep_only_bugs: bool = True,
 ) -> Iterator[DefectRecord]:
-    """Yield normalized DefectRecords for one source from a CSV file."""
+    """Yield normalized DefectRecords for one source.
+
+    Reads in chunks so multi-GB exports (e.g. the 1.9 GB Apache issues.csv)
+    stream through with low memory and stop early once ``limit`` is reached.
+    """
     if path is None:
         from config import settings
         path = settings.sample_dir / SAMPLE_FILES[source]
@@ -228,25 +312,36 @@ def load_source(
     if not path.exists():
         raise FileNotFoundError(f"Dataset for {source.value} not found at {path}")
 
-    df = pd.read_csv(path, dtype=str, keep_default_na=False, na_values=[""])
-    df.columns = [c.strip().lower() for c in df.columns]
-
-    # For JIRA exports, optionally keep only defects (drop improvements/tasks).
-    if source == Source.APACHE and keep_only_bugs:
-        type_col = next((c for c in ("issuetype", "issue_type", "type") if c in df.columns), None)
-        if type_col:
-            df = df[df[type_col].str.lower().str.contains("bug|defect", na=False)]
+    if path.is_dir():                      # MSR2013 Eclipse/Mozilla XML directory
+        yield from _load_msr2013(source, path, limit)
+        return
 
     normalizer = _NORMALIZERS[source]
     count = 0
-    for _, row in df.iterrows():
-        rec = normalizer(dict(row), source) if source == Source.APACHE else normalizer(dict(row), source)
-        if rec is None:
-            continue
-        yield rec
-        count += 1
-        if limit and count >= limit:
-            break
+    reader = pd.read_csv(
+        path, dtype=str, keep_default_na=False, na_values=[""],
+        chunksize=5000, on_bad_lines="skip",
+    )
+    for chunk in reader:
+        chunk.columns = [c.strip().lower() for c in chunk.columns]
+
+        # For JIRA exports, optionally keep only defects (drop improvements/tasks).
+        if source == Source.APACHE and keep_only_bugs:
+            type_col = next(
+                (c for c in ("issuetype.name", "issuetype", "issue_type", "type") if c in chunk.columns),
+                None,
+            )
+            if type_col is not None:
+                chunk = chunk[chunk[type_col].str.lower().str.contains("bug|defect", na=False)]
+
+        for _, row in chunk.iterrows():
+            rec = normalizer(dict(row), source)
+            if rec is None:
+                continue
+            yield rec
+            count += 1
+            if limit and count >= limit:
+                return
 
 
 def load_all(

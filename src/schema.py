@@ -124,13 +124,18 @@ class DefectRecord(BaseModel):
         return "\n".join(p for p in parts if p and p.strip())
 
     def to_metadata(self) -> dict:
-        """Chroma-legal metadata (scalars only; no None, no lists)."""
-        return {
+        """Chroma-legal metadata: scalars only, with empty strings dropped.
+
+        Storing ``""`` for absent fields can trip a metadata-segment compaction
+        bug in the Chroma 1.x core when a whole batch shares empty fields, so we
+        omit empties entirely. Readers use ``dict.get(key, "")``.
+        """
+        meta = {
             "defect_id": self.defect_id,
             "source": self.source.value,
-            "project": self.project or "",
-            "component": self.component or "",
-            "title": self.title or "",
+            "project": self.project,
+            "component": self.component,
+            "title": self.title,
             "severity": self.severity.value,
             "priority": self.priority.value,
             "status": self.status.value,
@@ -139,5 +144,6 @@ class DefectRecord(BaseModel):
             "has_stack_trace": self.has_stack_trace,
             "language": self.language or "",
             "keywords": ", ".join(self.keywords),
-            "url": self.url or "",
+            "url": self.url,
         }
+        return {k: v for k, v in meta.items() if isinstance(v, bool) or v}

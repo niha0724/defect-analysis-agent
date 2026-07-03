@@ -19,7 +19,7 @@ lxml>=5.1            # parse the Eclipse/Mozilla XML defect-tracking dumps
 
 # --- Embeddings + vector store (RAG) ---
 sentence-transformers>=2.7   # local, free embeddings (MiniLM / BGE)
-chromadb>=0.5                # local persistent vector database
+chromadb>=1.5                # local persistent vector DB (1.x line, compatible with hub>=1.5)
 
 # --- UI ---
 streamlit>=1.33

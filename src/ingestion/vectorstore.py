@@ -56,7 +56,7 @@ class DefectVectorStore:
         self._collection = self._get_or_create()
 
     # ---------- write ----------
-    def add_chunks(self, chunks: list[Chunk], batch_size: int = 256, show_progress: bool = True) -> int:
+    def add_chunks(self, chunks: list[Chunk], batch_size: int = 128, show_progress: bool = True) -> int:
         if not chunks:
             return 0
         for i in range(0, len(chunks), batch_size):

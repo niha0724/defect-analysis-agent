@@ -105,7 +105,7 @@ src/
   agents/          Module 3 — shared state + agent roles (orchestration in M2)
 app/               Streamlit prototype UI
 data/sample/       bundled Eclipse/Mozilla/Apache CSVs (runnable out of the box)
-scripts/           make_sample_data.py · download_datasets.py (real Kaggle data)
+scripts/           make_sample_data.py · download_datasets.py · build_real_kb.py
 tests/             pytest — parser + ingestion unit tests (16 passing)
 docs/              design documentation (01–06)
 ```
@@ -114,17 +114,31 @@ docs/              design documentation (01–06)
 
 ## Datasets
 
-Bundled sample runs with zero setup. For the full public data:
+The bundled sample (`data/sample/`) runs with **zero setup**. To seed the KB
+with the **real public datasets** (verified — 9,000 defects indexed):
 
 ```bash
-python scripts/download_datasets.py          # prints Kaggle slugs + mirrors
-python scripts/download_datasets.py --run     # download via the Kaggle CLI
-python -m src.ingestion.build_kb --data-dir data/raw --reset
+# Apache needs a free Kaggle token (~/.kaggle/kaggle.json); Eclipse+Mozilla are public.
+python scripts/download_datasets.py --run
+python scripts/build_real_kb.py --reset --limit 3000
 ```
 
-- **Eclipse & Mozilla Defect Tracking Dataset** (Lamkanfi et al., MSR 2013) —
-  ~200k defects · [GitHub mirror](https://github.com/ansymo/msr2013-bug_dataset)
-- **Apache JIRA issues** — [Kaggle](https://www.kaggle.com/datasets/tedlozzo/apaches-jira-issues)
+Real-data build (verified output):
+
+```
+loaded defects : 9000    chunks : 12493
+by source      : {apache: 6493, eclipse: 3000, mozilla: 3000}   # chunk counts
+by severity    : {major: 4825, normal: 3876, minor: 1737, critical: 691, blocker: 462, ...}
+by resolution  : {fixed: 7910, duplicate: 1294, invalid: 1135, worksforme: 752, ...}
+
+Retrieval 'NullPointerException during build'  → eclipse-175808 (fixed)  0.64
+Retrieval 'out of memory java heap'            → apache-CACTUS-213       0.64
+Retrieval 'browser crash on startup'           → mozilla-415528          0.64
+```
+
+Sources:
+- **Apache JIRA issues** — [Kaggle `tedlozzo/apaches-jira-issues`](https://www.kaggle.com/datasets/tedlozzo/apaches-jira-issues) (`issues.csv`, 1.9 GB — the loader streams it in chunks)
+- **Eclipse & Mozilla Defect Tracking Dataset** — Lamkanfi et al., MSR 2013 · [GitHub mirror](https://github.com/ansymo/msr2013-bug_dataset) (per-product XML, ~200k genuine defects)
 
 ---
 
@@ -139,7 +153,7 @@ Full rationale in [`docs/06_tech_stack.md`](docs/06_tech_stack.md).
 
 ## Roadmap
 
-- **M1 (done)** — Bug Submission Module · Historical Defect KB + RAG · design docs.
+- **M1 (done)** — Bug Submission Module · Historical Defect KB + RAG (seeded with 9k real Apache/Eclipse/Mozilla defects) · design docs.
 - **M2** — implement the 5 LangGraph agents; LLM-confirmed duplicate detection;
   structured findings display.
 - **M3+** — pattern analytics / systemic-issue detection (Module 6); evaluation
