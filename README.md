@@ -1,4 +1,4 @@
-# 🐞 Agentic Defect Analysis System
+#  Agentic Defect Analysis System
 
 An AI system that analyzes software defects by combining **RAG over a knowledge
 base of historical bugs** with a **multi-agent pipeline** (triage → log analysis
@@ -18,12 +18,12 @@ prior defects it reasoned from.
 
 | # | Module | M1 status |
 |---|--------|-----------|
-| 1 | **Bug Submission** — paste/upload → detect report vs trace vs log → extract exception chain, log histogram, key signals | ✅ built + tested |
-| 2 | **Historical Defect KB + RAG** — normalize datasets → clean → chunk → embed → index → retrieve | ✅ built + tested |
-| 3 | **Multi-Agent Orchestration** (Triage · Log · Root Cause · Duplicate · Remediation) via LangGraph | 🔵 scaffolded (M2) |
-| 4 | **Duplicate Detection** — semantic candidates + threshold + LLM confirm | ✅ retrieval built · 🔵 confirm (M2) |
-| 5 | **Structured Findings** display | 🔵 preview (M2) |
-| 6 | **Pattern Analytics** — systemic-issue detection | 🔵 later |
+| 1 | **Bug Submission** — paste/upload → detect report vs trace vs log → extract exception chain, log histogram, key signals |  built + tested |
+| 2 | **Historical Defect KB + RAG** — normalize datasets → clean → chunk → embed → index → retrieve |  built + tested |
+| 3 | **Multi-Agent Orchestration** (Triage · Log · Root Cause · Duplicate · Remediation) via LangGraph |  scaffolded (M2) |
+| 4 | **Duplicate Detection** — semantic candidates + threshold + LLM confirm |  retrieval built ·  confirm (M2) |
+| 5 | **Structured Findings** display |  preview (M2) |
+| 6 | **Pattern Analytics** — systemic-issue detection |  later |
 
 ---
 
