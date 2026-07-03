@@ -49,12 +49,12 @@ flowchart TB
 
 | # | Module | Responsibility | Status (M1) |
 |---|--------|----------------|-------------|
-| 1 | **Bug Submission** | Accept paste/upload; detect report vs trace vs log; extract exception chain, log histogram, key signals; normalize | ✅ built |
-| 2 | **Historical Defect KB + RAG** | Load/normalize datasets; clean, chunk, embed, index; retrieve top-k | ✅ built |
-| 3 | **Multi-Agent Orchestration** | LangGraph graph coordinating 5 agents over shared state | 🔵 scaffold (state, roles, LLM provider) |
-| 4 | **Duplicate Detection** | Semantic candidate search + threshold, then LLM confirm | ✅ retrieval built · 🔵 confirm in M2 |
-| 5 | **Structured Findings** | Render triage/root-cause/duplicate/remediation into a report | 🔵 preview panel |
-| 6 | **Pattern Analytics** | Aggregate across defects to find systemic issues | 🔵 later |
+| 1 | **Bug Submission** | Accept paste/upload; detect report vs trace vs log; extract exception chain, log histogram, key signals; normalize | built |
+| 2 | **Historical Defect KB + RAG** | Load/normalize datasets; clean, chunk, embed, index; retrieve top-k | built |
+| 3 | **Multi-Agent Orchestration** | LangGraph graph coordinating 5 agents over shared state | scaffold (state, roles, LLM provider) |
+| 4 | **Duplicate Detection** | Semantic candidate search + threshold, then LLM confirm | retrieval built ·  confirm in M2 |
+| 5 | **Structured Findings** | Render triage/root-cause/duplicate/remediation into a report | preview panel |
+| 6 | **Pattern Analytics** | Aggregate across defects to find systemic issues | later |
 
 ---
 
