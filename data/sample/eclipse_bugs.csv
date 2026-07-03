@@ -1,0 +1,40 @@
+bug_id,product,component,bug_severity,priority,short_desc,description,bug_status,resolution,dup_id,resolution_note,reporter,assigned_to,creation_ts,delta_ts
+1001,Platform,UI,major,P2,NullPointerException when saving editor with unsaved changes,"Steps to reproduce:
+1. Open a file in the text editor
+2. Make changes
+3. Ctrl+S
+
+Actual: NPE is thrown and the file is not saved.
+
+java.lang.NullPointerException
+	at org.eclipse.ui.internal.SaveHandler.execute(SaveHandler.java:142)
+	at org.eclipse.ui.internal.WorkbenchPage.saveEditor(WorkbenchPage.java:2311)
+	at org.eclipse.jface.action.Action.runWithEvent(Action.java:499)
+Caused by: java.lang.NullPointerException: editorInput was null
+	at org.eclipse.ui.internal.EditorManager.getInput(EditorManager.java:88)
+",RESOLVED,FIXED,,Added null guard on editorInput in EditorManager.getInput; added regression test.,amber,kai,2011-03-04 09:12:00,2011-03-09 14:00:00
+1002,JDT,Core,critical,P1,ClassCastException in type inference for generic methods,"When inferring the type of a chained generic method call the compiler throws:
+java.lang.ClassCastException: org.eclipse.jdt.core.dom.SimpleType cannot be cast to org.eclipse.jdt.core.dom.ParameterizedType
+	at org.eclipse.jdt.internal.compiler.lookup.Scope.inferTypeArguments(Scope.java:4120)",RESOLVED,FIXED,,Handle SimpleType in inferTypeArguments before casting.,deepa,kai,2011-05-11 10:00:00,2011-05-20 16:30:00
+1003,Platform,SWT,major,P3,Editor freezes (UI thread deadlock) when opening very large files,Opening a 50MB log file freezes the IDE. UI thread is blocked in synchronous read; jstack shows a deadlock between Display.syncExec and the file loader.,RESOLVED,FIXED,,Moved file loading off the UI thread; load asynchronously with progress.,sam,lena,2011-06-01 08:00:00,2011-06-15 12:00:00
+1004,Platform,Resources,normal,P3,Memory leak: workspace holds references to closed projects,"After closing and reopening projects many times, heap grows unbounded. A profiler shows ProjectDescription instances are never released.",RESOLVED,FIXED,,Clear listener registrations on project close.,amber,lena,2011-06-20 09:30:00,2011-07-02 11:00:00
+1005,JDT,Debug,minor,P4,Breakpoint markers not cleared after project delete,Deleting a project leaves stale breakpoint markers in the Breakpoints view.,RESOLVED,WONTFIX,,Working as intended; markers cleared on restart.,raj,,2011-07-05 14:00:00,2011-07-06 09:00:00
+1006,Platform,UI,major,P2,IllegalStateException in workbench during shutdown,"On exit the workbench sometimes logs:
+java.lang.IllegalStateException: Widget is disposed
+	at org.eclipse.swt.widgets.Widget.checkWidget(Widget.java:485)
+	at org.eclipse.ui.internal.WorkbenchWindow.close(WorkbenchWindow.java:1102)",RESOLVED,FIXED,,Check isDisposed() before closing window widgets on shutdown.,sam,kai,2011-08-01 10:00:00,2011-08-10 15:00:00
+1007,Platform,UI,major,P2,Saving a file throws NPE in SaveHandler.execute,"Every save attempt throws a NullPointerException from SaveHandler. Same trace as reported elsewhere.
+java.lang.NullPointerException
+	at org.eclipse.ui.internal.SaveHandler.execute(SaveHandler.java:142)
+	at org.eclipse.ui.internal.WorkbenchPage.saveEditor(WorkbenchPage.java:2311)
+	at org.eclipse.jface.action.Action.runWithEvent(Action.java:499)
+Caused by: java.lang.NullPointerException: editorInput was null
+	at org.eclipse.ui.internal.EditorManager.getInput(EditorManager.java:88)
+",RESOLVED,DUPLICATE,1001,,victor,,2011-03-08 11:00:00,2011-03-08 12:00:00
+1008,Platform,Text,normal,P3,Find/Replace dialog ignores the case-sensitive option,Enabling 'Case sensitive' in Find/Replace has no effect; matches are still case-insensitive.,RESOLVED,FIXED,,Propagate caseSensitive flag to the search engine.,nina,lena,2011-09-01 09:00:00,2011-09-05 10:00:00
+1009,JDT,Core,blocker,P1,OutOfMemoryError building a large workspace,A full build of a 2000-file workspace fails with java.lang.OutOfMemoryError: GC overhead limit exceeded in the compiler's type binding cache.,RESOLVED,FIXED,,Bounded the type binding cache with an LRU; reduced retained heap by 60%.,deepa,kai,2011-10-02 08:00:00,2011-10-20 17:00:00
+1010,Platform,UI,normal,P3,Dark theme: tree selection color is unreadable,"In the dark theme, selected rows in Package Explorer use dark text on a dark background.",NEW,,,,nina,,2012-01-10 09:00:00,
+1011,Equinox,p2,major,P2,Update fails with BundleException on restart,"Applying an update then restarting fails:
+org.osgi.framework.BundleException: Could not resolve module
+	at org.eclipse.osgi.container.Module.start(Module.java:444)",RESOLVED,FIXED,,Refresh the resolver state before restart.,raj,lena,2012-02-01 10:00:00,2012-02-14 12:00:00
+1012,Platform,UI,minor,P4,Tooltip flickers on hover in Package Explorer,Hovering over long file names makes the tooltip flicker rapidly.,RESOLVED,WORKSFORME,,Cannot reproduce on current build.,victor,,2012-03-01 09:00:00,2012-03-03 09:00:00

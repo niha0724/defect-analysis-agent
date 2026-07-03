@@ -1,0 +1,19 @@
+# ============================================================
+# Multi-Agent layer (Milestone 2+). Installed on top of requirements.txt.
+#   - LangGraph orchestrates the 5-agent analysis pipeline
+#   - Agents run on open Hugging Face models, reachable three ways:
+#       1. HF Inference API / Inference Providers  (langchain-huggingface)
+#       2. Any OpenAI-compatible server: vLLM on Thunder, Ollama, LM Studio
+#          (langchain-openai, pointed at a custom base_url)
+# ============================================================
+
+langgraph>=0.2
+langchain>=0.2
+langchain-core>=0.2
+
+# Hugging Face-native path (serverless Inference API)
+langchain-huggingface>=0.0.3
+huggingface-hub>=0.23
+
+# OpenAI-compatible path (vLLM / Ollama / LM Studio / Thunder)
+langchain-openai>=0.1

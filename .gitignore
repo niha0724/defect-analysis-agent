@@ -1,0 +1,41 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ---- Virtual envs ----
+.venv/
+venv/
+env/
+
+# ---- Secrets / config ----
+.env
+*.local
+
+# ---- Data & vector store (large / regenerable) ----
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+chroma_db/
+*.sqlite3
+
+# Keep the small bundled sample so the repo is runnable out of the box
+!data/sample/
+!data/sample/**
+
+# ---- Model caches ----
+.cache/
+hf_cache/
+
+# ---- OS / editor ----
+.DS_Store
+.idea/
+.vscode/
+*.swp

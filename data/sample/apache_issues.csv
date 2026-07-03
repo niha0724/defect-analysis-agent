@@ -1,0 +1,41 @@
+key,project,issuetype,summary,description,priority,status,resolution,components,duplicate_of,resolution_note,reporter,assignee,created,resolutiondate
+HADOOP-101,HADOOP,Bug,NullPointerException in NameNode when block report arrives during safemode,"The NameNode throws an NPE if a DataNode block report arrives while the node is still in safemode and the BlockManager is not fully initialized.
+java.lang.NullPointerException
+	at org.apache.hadoop.hdfs.server.namenode.BlockManager.processReport(BlockManager.java:1934)
+	at org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer.blockReport(NameNodeRpcServer.java:1521)
+	at org.apache.hadoop.ipc.Server$Handler.run(Server.java:2278)
+",Major,Resolved,Fixed,namenode,,Guarded block report handling against a null BlockManager during safemode; added a null check and a unit test.,arun,todd,2012-01-10,2012-01-24
+SPARK-202,SPARK,Bug,OutOfMemoryError: Java heap space during shuffle with large partitions,"Shuffle-heavy jobs fail with OOM when a single partition does not fit in memory.
+java.lang.OutOfMemoryError: Java heap space
+	at org.apache.spark.util.collection.ExternalAppendOnlyMap.insert(ExternalAppendOnlyMap.scala:191)
+	at org.apache.spark.shuffle.BlockStoreShuffleReader.read(BlockStoreShuffleReader.scala:104)
+	at org.apache.spark.rdd.RDD.iterator(RDD.scala:337)
+",Critical,Resolved,Fixed,Spark Core,,Enabled spill-to-disk for the shuffle map; fixed an accumulator leak. Tune spark.shuffle.spill.numElementsForceSpillThreshold.,matei,reynold,2014-03-02,2014-03-19
+KAFKA-303,KAFKA,Bug,TimeoutException: Expiring records for topic after 30000 ms,Producers intermittently fail with org.apache.kafka.common.errors.TimeoutException when the broker metadata is stale during a leader election.,Major,Resolved,Fixed,producer,,Fixed a metadata refresh deadlock; increased default request.timeout.ms and documented retries.,jun,jason,2015-06-01,2015-06-15
+HADOOP-104,HADOOP,Bug,NPE in NameNode processing block report during safemode on startup,"Same NullPointerException path as reported before — block report during safemode hits a null BlockManager.
+java.lang.NullPointerException
+	at org.apache.hadoop.hdfs.server.namenode.BlockManager.processReport(BlockManager.java:1934)
+	at org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer.blockReport(NameNodeRpcServer.java:1521)
+	at org.apache.hadoop.ipc.Server$Handler.run(Server.java:2278)
+",Major,Resolved,Duplicate,namenode,HADOOP-101,,steve,,2012-01-15,2012-01-16
+AIRFLOW-405,AIRFLOW,Bug,Scheduler crashes with sqlalchemy OperationalError: server closed the connection,"The scheduler dies after a few hours when the Postgres connection is dropped by the server.
+Traceback (most recent call last):
+  File ""/usr/local/lib/python3.10/site-packages/airflow/jobs/scheduler_job.py"", line 1487, in _run_scheduler_loop
+    self._do_scheduling(session)
+  File ""/usr/local/lib/python3.10/site-packages/sqlalchemy/engine/base.py"", line 1802, in execute
+    return connection._execute_clauseelement(elem, multiparams, params)
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) server closed the connection unexpectedly
+",Critical,Resolved,Fixed,scheduler,,Set pool_recycle and pool_pre_ping on the SQLAlchemy engine; retry on OperationalError.,maxime,kaxil,2018-07-01,2018-07-20
+SPARK-206,SPARK,Bug,Task not serializable: NotSerializableException for closure capturing SparkContext,A map closure that references a field of the driver class captures the whole SparkContext and fails with org.apache.spark.SparkException: Task not serializable.,Major,Resolved,Fixed,Spark Core,,Extract the needed value into a local val (or broadcast it) so the closure does not capture SparkContext.,matei,reynold,2014-05-02,2014-05-12
+HBASE-507,HBASE,Bug,RegionServer aborts with IOException: Too many open files,Under high region count the RegionServer aborts because it exhausts file descriptors while opening HFiles.,Blocker,Resolved,Fixed,regionserver,,Fixed a file-handle leak in HFileReader; documented raising the OS ulimit.,stack,lars,2013-09-01,2013-09-22
+KAFKA-308,KAFKA,Bug,ConcurrentModificationException during consumer group rebalance,"java.util.ConcurrentModificationException is thrown while iterating assigned partitions during a rebalance.
+	at java.util.HashMap$HashIterator.nextNode(HashMap.java:1445)
+	at org.apache.kafka.clients.consumer.internals.ConsumerCoordinator.onJoinComplete(ConsumerCoordinator.java:279)",Major,Resolved,Fixed,consumer,,Copy the assignment set before iterating; synchronize rebalance callbacks.,jun,jason,2015-08-01,2015-08-18
+FLINK-609,FLINK,Bug,Checkpoint expired before completing under backpressure,"Checkpoints time out and expire when the job is under sustained backpressure, eventually failing the job.",Major,Open,Unresolved,Runtime / Checkpointing,,,aljoscha,,2017-02-01,
+AIRFLOW-408,AIRFLOW,Bug,DAG import error: ModuleNotFoundError after upgrade,"After upgrading, DAGs that import a local plugin fail with ModuleNotFoundError: No module named 'plugins'.
+Traceback (most recent call last):
+  File ""/opt/airflow/dags/etl.py"", line 3, in <module>
+    from plugins.hooks import MyHook
+ModuleNotFoundError: No module named 'plugins'",Major,Resolved,Fixed,DagBag,,Add the plugins directory to sys.path; document AIRFLOW__CORE__PLUGINS_FOLDER / PYTHONPATH.,maxime,kaxil,2018-09-01,2018-09-10
+HADOOP-110,HADOOP,Improvement,Improve NameNode metrics for safemode transitions,Add counters and timers around safemode entry/exit to aid debugging. (Not a defect — improvement.),Minor,Resolved,Fixed,namenode,,Added safemode metrics.,arun,todd,2012-02-01,2012-02-10
+SPARK-210,SPARK,Bug,Deadlock between BlockManager and MemoryStore under high concurrency,"Two threads acquire the BlockManager and MemoryStore locks in opposite order, producing a deadlock during eviction under load.",Critical,Resolved,Fixed,Spark Core,,Impose a consistent lock ordering; take the MemoryStore lock before the BlockInfo lock.,matei,reynold,2014-07-01,2014-07-25

@@ -1,0 +1,17 @@
+bug_id,product,component,bug_severity,priority,short_desc,description,bug_status,resolution,dup_id,resolution_note,reporter,assigned_to,creation_ts,delta_ts
+2001,Firefox,General,critical,P1,Crash on startup [@ mozilla::layers::CompositorBridgeParent],Firefox crashes immediately on launch on Linux with hardware acceleration enabled. Crash signature points to the compositor bridge.,RESOLVED,FIXED,,Null-check the widget before creating the compositor session.,pat,quinn,2013-04-01 09:00:00,2013-04-12 15:00:00
+2002,Core,JavaScript,major,P2,TypeError: can't access property length of null in Array map polyfill,"Loading bookmarks throws a TypeError from the ArrayUtils map polyfill when the input is null.
+TypeError: can't access property ""length"", arr is null
+    at map (resource://gre/modules/ArrayUtils.js:52:18)
+    at loadBookmarks (resource://app/modules/Bookmarks.js:210:9)
+    at async init (resource://app/modules/Startup.js:88:5)
+",RESOLVED,FIXED,,Guard against null input in ArrayUtils.map.,lee,quinn,2013-05-03 10:00:00,2013-05-09 11:00:00
+2003,Firefox,Bookmarks,normal,P3,Bookmarks lost after a crash during sync,"If the browser crashes mid-sync, the local bookmarks database is truncated and entries are lost.",RESOLVED,FIXED,,Write bookmarks atomically via a temp file + rename.,pat,morgan,2013-06-01 08:00:00,2013-06-20 12:00:00
+2004,Core,Networking,major,P2,Memory leak in HTTP cache under heavy load,"Under sustained load, RSS grows steadily; the HTTP cache never evicts entries whose channels errored out.",RESOLVED,FIXED,,Release cache entries on channel error.,lee,morgan,2013-07-01 09:00:00,2013-07-15 10:00:00
+2005,Firefox,General,critical,P1,Browser crashes at startup on Linux with GPU acceleration,Same as the compositor startup crash. Happens on every launch with WebRender enabled.,RESOLVED,DUPLICATE,2001,,sky,,2013-04-05 09:00:00,2013-04-05 10:00:00
+2006,Core,DOM,major,P2,Null pointer dereference in nsDocument::Destroy,"Closing a tab quickly after load sometimes crashes:
+Segmentation fault in nsDocument::Destroy (nsDocument.cpp:3120)",RESOLVED,FIXED,,Check mPresShell for null before teardown.,pat,quinn,2013-08-01 09:00:00,2013-08-18 12:00:00
+2007,Firefox,Address Bar,minor,P4,Autocomplete suggests already-deleted history entries,Deleted history entries still appear as awesomebar suggestions until restart.,RESOLVED,WONTFIX,,Deferred; suggestion cache refresh is expensive.,sky,,2013-09-01 09:00:00,2013-09-02 09:00:00
+2008,Core,Graphics,major,P2,WebGL context lost causes the tab to freeze,"When the GPU driver resets, the WebGL context is lost and the tab hangs instead of recovering.",NEW,,,,lee,,2014-01-05 09:00:00,
+2009,Firefox,Preferences,normal,P3,Settings search returns no results for 'proxy',Typing 'proxy' in the settings search box returns nothing even though proxy settings exist.,RESOLVED,FIXED,,Index the connection settings section for search.,morgan,quinn,2014-02-01 09:00:00,2014-02-06 10:00:00
+2010,Core,JavaScript,critical,P1,Infinite recursion (stack overflow) in Promise resolution,A self-resolving promise causes InternalError: too much recursion and crashes the JS engine.,RESOLVED,FIXED,,Detect self-resolution and reject with TypeError per spec.,lee,quinn,2014-03-01 09:00:00,2014-03-14 12:00:00

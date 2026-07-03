@@ -1,0 +1,28 @@
+# ============================================================
+# Core runtime for Milestone 1
+#   - Bug Submission Module (parsers are pure-Python, no heavy deps)
+#   - Historical Defect Knowledge Base + RAG ingestion/retrieval
+#   - Streamlit prototype UI
+# This subset is enough to build the KB and run the demo end-to-end.
+# The multi-agent layer (LangGraph + HF LLMs) lives in
+# requirements-agents.txt so the M1 pipeline installs fast and clean.
+# ============================================================
+
+# --- Config / data model ---
+pydantic>=2.6,<3
+pydantic-settings>=2.2,<3
+python-dotenv>=1.0
+
+# --- Data handling ---
+pandas>=2.1
+lxml>=5.1            # parse the Eclipse/Mozilla XML defect-tracking dumps
+
+# --- Embeddings + vector store (RAG) ---
+sentence-transformers>=2.7   # local, free embeddings (MiniLM / BGE)
+chromadb>=0.5                # local persistent vector database
+
+# --- UI ---
+streamlit>=1.33
+
+# --- Utilities ---
+tqdm>=4.66
