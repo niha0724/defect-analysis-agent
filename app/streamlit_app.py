@@ -28,10 +28,10 @@ from src.submission.parsers import parse_submission
 st.set_page_config(page_title="Agentic Defect Analysis — M1", page_icon="🐞", layout="wide")
 
 ARTIFACT_BADGE = {
-    "bug_report": "🐞 Bug report",
-    "stack_trace": "🧵 Stack trace",
-    "error_log": "📜 Error log",
-    "mixed": "🧩 Mixed (report + trace)",
+    "bug_report": "Bug report",
+    "stack_trace": "Stack trace",
+    "error_log": "Error log",
+    "mixed": " Mixed (report + trace)",
     "unknown": "❔ Unknown",
 }
 
@@ -70,7 +70,7 @@ def render_similarity_results(results, threshold: float) -> None:
                     meta += f" · dup-of: `{r.duplicate_of}`"
                 st.caption(meta)
                 if r.is_resolved_fixed and r.metadata.get("resolution"):
-                    st.caption("✅ has a known fix — useful for remediation")
+                    st.caption("has a known fix — useful for remediation")
             with c2:
                 st.metric("similarity", f"{r.score:.2f}")
             if r.url:
@@ -81,7 +81,7 @@ def render_similarity_results(results, threshold: float) -> None:
 # Sidebar
 # --------------------------------------------------------------------------
 with st.sidebar:
-    st.header("⚙️ Status")
+    st.header("Status")
     ready, n = kb_ready()
     if ready:
         st.success(f"Knowledge base: {n} chunks indexed")
@@ -96,10 +96,10 @@ with st.sidebar:
     dup_threshold = st.slider("Duplicate threshold", 0.3, 0.95, 0.60, 0.05)
 
 
-st.title("🐞 Agentic Defect Analysis System")
+st.title("Agentic Defect Analysis System")
 st.caption("Milestone 1 prototype — Bug Submission + RAG over a Historical Defect Knowledge Base")
 
-tab_submit, tab_kb = st.tabs(["🔍 Submit & Analyze", "📚 Knowledge Base"])
+tab_submit, tab_kb = st.tabs(["🔍 Submit & Analyze", "Knowledge Base"])
 
 # ==========================================================================
 # TAB 1 — Submit & Analyze
@@ -143,7 +143,7 @@ with tab_submit:
         if art.exceptions:
             st.markdown("**Exception chain** (deepest = most likely root cause):")
             for i, exc in enumerate(art.exceptions):
-                root = " · 🎯 root cause" if exc is art.root_cause_exception and len(art.exceptions) > 1 else ""
+                root = " ·root cause" if exc is art.root_cause_exception and len(art.exceptions) > 1 else ""
                 with st.expander(f"{'↳ ' * i}{exc.exception_type}{root}", expanded=(i == 0)):
                     if exc.message:
                         st.write(exc.message)
@@ -181,12 +181,12 @@ with tab_submit:
             results = get_retriever().search_submission(sub, k=top_k)
             dups = [r for r in results if r.score >= dup_threshold]
             if dups:
-                st.error(f"⚠️ {len(dups)} likely duplicate(s) of known defect(s) above threshold {dup_threshold:.2f}.")
+                st.error(f"{len(dups)} likely duplicate(s) of known defect(s) above threshold {dup_threshold:.2f}.")
             render_similarity_results(results, dup_threshold)
 
         # ---- M2 preview ----
         st.subheader("3 · Multi-agent analysis")
-        st.info("🚧 Milestone 2 — the pipeline below will run on these parsed signals + retrieved context.")
+        st.info("Milestone 2 — the pipeline below will run on these parsed signals + retrieved context.")
         cols = st.columns(len(AGENT_RESPONSIBILITIES))
         for col, (role, desc) in zip(cols, AGENT_RESPONSIBILITIES.items()):
             with col:
