@@ -25,7 +25,7 @@ from config import settings
 from src.agents.state import AGENT_RESPONSIBILITIES
 from src.submission.parsers import parse_submission
 
-st.set_page_config(page_title="Agentic Defect Analysis — M1", page_icon="🐞", layout="wide")
+st.set_page_config(page_title="Agentic Defect Analysis — M1", page_icon="", layout="wide")
 
 ARTIFACT_BADGE = {
     "bug_report": "Bug report",
@@ -99,7 +99,7 @@ with st.sidebar:
 st.title("Agentic Defect Analysis System")
 st.caption("Milestone 1 prototype — Bug Submission + RAG over a Historical Defect Knowledge Base")
 
-tab_submit, tab_kb = st.tabs(["🔍 Submit & Analyze", "Knowledge Base"])
+tab_submit, tab_kb = st.tabs(["Submit & Analyze", "Knowledge Base"])
 
 # ==========================================================================
 # TAB 1 — Submit & Analyze
