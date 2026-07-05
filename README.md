@@ -153,7 +153,7 @@ Full rationale in [`docs/06_tech_stack.md`](docs/06_tech_stack.md).
 
 ## Roadmap
 
-- **M1 ** — Bug Submission Module · Historical Defect KB + RAG (seeded with 9k real Apache/Eclipse/Mozilla defects) · design docs.
+- **M1** — Bug Submission Module · Historical Defect KB + RAG (seeded with 9k real Apache/Eclipse/Mozilla defects) · design docs.
 - **M2** — implement the 5 LangGraph agents; LLM-confirmed duplicate detection;
   structured findings display.
 - **M3+** — pattern analytics / systemic-issue detection (Module 6); evaluation
